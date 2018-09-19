@@ -1,3 +1,4 @@
+﻿//2nd work
 /*
 
 * washmachine.c
