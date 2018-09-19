@@ -11,6 +11,7 @@
 #include "FND.h"
 
 void TimerInterruptInit(void);
+void SetDispFnd(unsigned int iData);
 
 volatile uint8_t timercounter0 = 0;
 volatile unsigned int FndValue = 0;
@@ -35,6 +36,7 @@ ISR(TIMER0_OVF_vect)
 
 int main(void)
 {
+	unsigned int count = 0;
 	FND_init();
 	TimerInterruptInit();
 	sei();
@@ -43,7 +45,8 @@ int main(void)
     {
 		_delay_ms(100);
 		_delay_ms(100);
-		FndValue++;
+		SetDispFnd(count++);
+		//FndValue++;
     }
 }
 
@@ -51,4 +54,9 @@ void TimerInterruptInit(void)
 {
 	TCCR0 |= (1<<CS02) | (0<<CS01) | (0<<CS00);
 	TIMSK |= (1<<TOIE0);
+}
+
+void SetDispFnd(unsigned int iData)
+{
+	FndValue = iData;
 }
