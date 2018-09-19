@@ -2,6 +2,7 @@
  * code19-1.c p430
  *
  * Created: 2018-09-19 오후 2:30:52
+ * Updated: 2018-09-19 MVC 규칙에 따른 함수 정리
  * Author : usuzin
  */ 
 
@@ -62,44 +63,44 @@ int main(void)
 {
 	uint8_t Data_val[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x27, 0x7f, 0x67};
 	uint8_t Data_buff;
-	PORTE = 0x00;
+						// 4      3     2     1
+	//uint8_t Pin_pos[] = {0x08, 0x04, 0x02, 0x01};
+	
 	FND_init();
+	
+	
 	while(1)
 	{
-		
-	
-	//입력데이터: 레지스터에 들어가는 숫자에 해당하는 LED 밝기 제어 비트
-	for(int i = 0; i<8; i++)
-	{
-		Data_buff = (Data_val[3] << i);	//i번째 비트 확인 (shift)
-		
-		if(Data_buff & 0x80) //입력 데이터의 가장 상위비트가 1일 경우
+		//입력데이터: 레지스터에 들어가는 숫자에 해당하는 LED 밝기 제어 비트
+		for(int i = 0; i<8; i++)
 		{
-			PORTE |= (1 << Data_pin);	//해당 data pin을 set(High)
+			Data_buff = (Data_val[2] << i);	//i번째 비트 확인 (shift)
+		
+			if(Data_buff & 0x80) //입력 데이터의 가장 상위비트가 1일 경우
+			{
+				PORTE |= (1 << Data_pin);	//해당 data pin을 set(High)
+			}
+			else
+			{
+				PORTE &= ~(1 << Data_pin);	//해당 data pin을 LOW
+			}
+			//CLK pin
+			//L
+			PORTE &= ~(1 << Clockpin); 
+			//H
+			PORTE |= (1 << Clockpin);
+			//L
+			PORTE &= ~(1 << Clockpin);
 		}
-		else
-		{
-			PORTE &= ~(1 << Data_pin);	//해당 data pin을 LOW
-		}
-		//CLK pin
+		
+		//Latch 1바이트 전달 후 실제 출력 발생
 		//L
-		PORTE &= ~(1 << Clockpin); 
+		PORTE &= ~(1 << Latchpin);
 		//H
-		PORTE |= (1 << Clockpin);
-		//L
-		PORTE &= ~(1 << Clockpin);
-	}
-	
-	//Latch
-	//L
-		PORTE &= ~(1 << Latchpin);
-	//H
 		PORTE |= (1 << Latchpin);
-	//L
+		//L
 		PORTE &= ~(1 << Latchpin);
-   /* while (1) 
-    {
-    }*/
 	}
+	_delay_ms(1000);
 }
 
