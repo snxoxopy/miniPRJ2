@@ -32,8 +32,9 @@ int main(void)
 {
     //초기화
 	USART1_init(BR9600);
-	PIN_Init();
-	PWM_Init();
+	Motor_init();
+	Motor_TIM_Init();
+	
 	
 	//입출력을 위한 변수
 	stdin = &usart1_in;
@@ -50,6 +51,7 @@ int main(void)
 	
     while (1) 
     {
+		EnableMotor1();
 		//상태 설정 메세지
 		printf("********************************\r\n");
 		printf("***********MotorState.**********\r\n");
@@ -70,21 +72,25 @@ int main(void)
 		{
 			case Go:
 				PORTA |= (1 << PORTA0);	//Green
-				OCR0 = 128;
+				OCR0 = 80;
+				OCR2 = 250;
 				_delay_ms(10);
 				//dim += direction;
 				break;
 			case Right:
 				PORTA |= (1 << PORTA1);	//Yellow
-				OCR0 = 1;
-				_delay_ms(10);
+				OCR0 = 128;
+				_delay_ms(1000);
 				break;
 			case Left:
 				PORTA |= (1 << PORTA2);	//Yellow
+				OCR0 = 255;
+				_delay_ms(100);
 				break;
 			case Stop:
 				PORTA |= (1 << PORTA3);	//Red
-				OCR0 = 255;
+				OCR0 = 1;
+				_delay_ms(10);
 				break;
 			default:
 				printf("Please check the number of state.\r\n");
