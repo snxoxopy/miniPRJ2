@@ -16,17 +16,18 @@ int main(void)
 {
     UART0 uart; //uart 객체선언
 	motor mtr;
+	int avr_hz = 2*1000;
+	char buff[100];
 	uart.print_string("chk signal\r\n");
+	sprintf(buff,"freq. = %03d[kHz]\r\n", avr_hz/1000);
+	uart.print_string(buff);
 	
     while (1) 
     {
 		//motor 회전
-		mtr.left_go();
-		_delay_ms(100);
-		mtr.right_go();
-		_delay_ms(100);
-		mtr.stop();
-		_delay_ms(100);
+		mtr.left_go(avr_hz);
+		//mtr.right_go();
+		//mtr.stop();
     }
 }
 

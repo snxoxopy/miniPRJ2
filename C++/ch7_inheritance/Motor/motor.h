@@ -35,7 +35,7 @@ class motor
 	public:
 		motor();
 		~motor();
-		void left_go();
+		void left_go(int hz);
 		void right_go();
 		void stop();
 	protected:

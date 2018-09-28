@@ -43,23 +43,33 @@ void motor::motor_init(void)
 	PORTA = 0x0f;
 }
 
-void motor::left_go(void)
+void motor::left_go(int hz)
 {
+	// F = 1/T
+	// freq. 2khz <-> period 0.5ms
+	// 속도와 주기는 비례?
+	// 분주비 256 -> 16MHz/256 -> 1초에 62500 펄스 발생
+	// 1초 62.5k를 1초 2k로 변환
+	// OCR이 31250번 펄스가 발생할때 0.5ms
+	// OCR의 주파수 = (1초) 1: (펄스개수)16M/256 = x초 : (펄스개수) 31250 (16M/256) * hz
+	// x초 = (16M/256)*hz
+	// OCR = (16M/256)*hz
+	int prd = (16000000/256)*hz;
 	ForwardMotor_L();
-	SpeedMotor_L(80);
-	_delay_ms(500);
+	SpeedMotor_L(prd);
+	_delay_ms(50);
 	BackwardMotor_L();
-	SpeedMotor_L(80);
-	_delay_ms(500);
+	SpeedMotor_L(prd);
+	_delay_ms(50);
 }
 
 void motor::right_go()
 {
 	ForwardMotor_R();
-	SpeedMotor_R(80);
+	SpeedMotor_R(50);
 	_delay_ms(500);
 	BackwardMotor_R();
-	SpeedMotor_R(80);
+	SpeedMotor_R(50);
 	_delay_ms(500);
 }
 
