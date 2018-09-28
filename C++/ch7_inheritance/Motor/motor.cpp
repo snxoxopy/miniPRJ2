@@ -53,8 +53,9 @@ void motor::left_go(int hz)
 	// OCR이 31250번 펄스가 발생할때 0.5ms
 	// OCR의 주파수 = (1초) 1: (펄스개수)16M/256 = x초 : (펄스개수) 31250 (16M/256) * hz
 	// x초 = (16M/256)*hz
-	// OCR = (16M/256)*hz
+	// OCR = 1/x초
 	int prd = (16000000/256)*hz;
+	
 	ForwardMotor_L();
 	SpeedMotor_L(prd);
 	_delay_ms(50);
