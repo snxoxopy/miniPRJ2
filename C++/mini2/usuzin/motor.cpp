@@ -25,12 +25,12 @@ motor::~motor()
 void motor::motor_init(void)
 {
 	//타이머
-	TCCR1B |= (1 << CS12);	//분주비 256으로 설정
+	TCCR1B |= ( (1 << CS12) | (1 << CS10) );	//오른쪽 바퀴분주비 1024으로 설정
 	TCCR1B |= (1 << WGM12);	//Fast PWM mode
 	TCCR1A |= ((1 << WGM11) | (1 << WGM10));	//Fast PWM mode
 	TCCR1A |= ((1 << COM1A1) | (1 << COM1B1) );
 
-	TCCR3B |= (1 << CS32);	//분주비 256으로 설정
+	TCCR3B |= ( (1 << CS32) | (1 << CS30));	// 왼쪽바퀴 분주비 1024으로 설정
 	TCCR3B |= (1 << WGM32);	//Fast PWM mode
 	TCCR3A |= (1 << WGM31) | (1 << WGM30);	//Fast PWM mode
 	TCCR3A |= ((1 << COM3A1) | (1 << COM3B1) );
@@ -40,27 +40,46 @@ void motor::motor_init(void)
 	
 	//LED test
 	DDRA |= (1 << PORTA0) | (1 << PORTA1) | (1 << PORTA2) | (1 << PORTA3);
-	PORTA = 0x0f;
+
+	PORTA = 0x00;
 }
 
-void motor::left_go(int v)
+void motor::go(int v)
 {	
-	ForwardMotor_L();
 	SpeedMotor_L(v);
-	BackwardMotor_L();
-	SpeedMotor_L(v);
+	SpeedMotor_R(v);
+	PORTA = (1 << PORTA0);
 }
 
-void motor::right_go(int v)
+void motor::T_left(int v)
 {
-	ForwardMotor_R();
+	//int left = v + 200;
+	SpeedMotor_L(v);
+	SpeedMotor_R(1);
+	PORTA = (1 << PORTA1);
+}
+
+void motor::T_right(int v)
+{
+	//int right = v + 200;
 	SpeedMotor_R(v);
-	BackwardMotor_R();
-	SpeedMotor_R(v);
+	SpeedMotor_L(1);
+	PORTA = (1 << PORTA2);
+}
+
+void motor::back(int v)
+{	
+	SpeedMotor_L(0);
+	SpeedMotor_R(0);
+	SpeedMotor_LB(v);
+	SpeedMotor_RB(v);
+	PORTA = (1 << PORTA3);
 }
 
 void motor::stop(void)
 {
-	PORTB = PORTE = 0x00;
-	_delay_ms(500);
+	//PORTB = PORTE = 0x00;
+	SpeedMotor_L(0);
+	SpeedMotor_R(0);
+	PORTA = 0x00;
 };

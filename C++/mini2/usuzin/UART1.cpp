@@ -93,11 +93,10 @@ ISR(USART1_RX_vect)
 
 int UART1::mtr_chk(void)
 {
-	int mtr_state;	
+	int mtr_state = NULL;	
 	mtr_state = receive();
 	return mtr_state;
 }
-
 
 
 // USART1 receive char check
