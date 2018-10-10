@@ -1,6 +1,6 @@
 /*
  * usuzin.cpp
- * 수동모드
+ * 수동모드, LCD 센서 값 출력
  * Created: 2018-10-01 오후 4:38:14
  * Author : usuzin
  */ 
@@ -9,156 +9,110 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "motor.h"
-#include "UART1.h" //BT 통신을 위해 uart1사용
-
+#include "UART1.h"	//BT 통신을 위해 uart1사용
+#include "I2C.h"	//LCD - AVR I2C 통신 이용
+#include "I2C_LCD.h"
+#include "SR04.h"
 
 enum{GO=49, T_left, T_right, Stop, Back, Test};//ascii 1 2 3 4 5 6 
 
-
 int main(void)
 {
-    UART1 uart;
-	motor mtr;
+    UART1 uart;			//BT(uart1) 통신을 위한 클래스 선언
+	motor mtr;			//모터 상태제어 클래스 선언
+	I2C_LCD lcd;
+	//SR04 sensor;
+	
 	int mtr_state;
 	int mtr_v = 200;	//12ms 동안 high
-	int rx_tag = 1;
+	int rx_tag = 1;		//초기에 상태 설정 메세지 출력
 	char buff[100];
 	char prt_state[100];
+	unsigned int distance;
 	
-	//bool loop_tag = true;
-	bool if_tag = true;
+	sei();//uart 링버퍼 구현을 위한 전역적 인터럽트 실행
 	
-	sei();
+	lcd.I2C_LCD_clear();
+	lcd.I2C_LCD_write_string_XY(0,0,"*USZ 0510*");
 	
-	#if 0
-    while(1) 
-    {
-		if(if_tag)//uart 수신 확인
+	while(1)
+	{
+	//	distance = sensor.measure_distance();
+		//sprintf(buff,"%03d cm",distance);
+		//_delay_ms(500);
+		//lcd.I2C_LCD_write_string_XY(1,0,buff);
+		
+		if(rx_tag)//rx가 들어오면
 		{
-			if_tag = false;
 			//상태 설정 메세지 uart
 			uart.print_string("*********************************\r\n");
 			uart.print_string("***********Motor_State.**********\r\n");
 			uart.print_string("1. Go\r\n");
-			uart.print_string("2. Left\r\n");
-			uart.print_string("3. Right\r\n");
+			uart.print_string("2. Right\r\n");
+			uart.print_string("3. Left\r\n");
 			uart.print_string("4. Stop\r\n");
 			uart.print_string("Select Number>> \r\n");
-			
-			//mtr_state = 블루투스에서 받아온 결과를 반환
-			mtr_state = uart.mtr_chk();
-			if(mtr_state)
-			{
-				sprintf(prt_state,"%s\r\n", ( (mtr_state == 49) ? "-> 1.GO" : (mtr_state == 50 ? "-> 2.Left" : (mtr_state == 51 ? "-> 3.Right" : (mtr_state == 52 ? "-> 4.Stop" : (mtr_state == 53 ? "-> 5.Back" : "") ) ) ) ) );
-				//sprintf(buff,"State: %c \r\n", prt_state);
-				uart.print_string(prt_state);
-			}
-			sprintf(buff,"mtr_state = %d\r\n",mtr_state);
-			uart.print_string(buff);
+			rx_tag = 0;
+		}
+		//모터 상태 읽어오기
+		mtr_state = uart.mtr_chk();
+		sprintf(buff,"State: %d \r\n", mtr_state);
+		uart.print_string(buff);
+		if(mtr_state)
+		{
+			sprintf(prt_state,"%s\r\n", ( (mtr_state == 49) ? "-> 1.GO" : (mtr_state == 50 ? "-> 2.Left" : (mtr_state == 51 ? "-> 3.Right" : (mtr_state == 52 ? "-> 4.Stop" : (mtr_state == 53 ? "-> 5.Back" : "") ) ) ) ) );
+			//sprintf(buff,"State: %c \r\n", prt_state);
+			uart.print_string(prt_state);
 		}
 		switch(mtr_state)
 		{
 			case GO:
-			mtr.go(mtr_v);
-			uart.print_string("GO\r\n");
-			break;
-			
+				uart.print_string("Motor_GO\r\n");
+				mtr.go(mtr_v);
+				sprintf(buff,"%10s","GO");
+				lcd.I2C_LCD_write_string_XY(1,0,buff);
+				break;
+				
 			case T_left:
-			mtr.T_left(mtr_v);
-			uart.print_string("T L\r\n");
-			break;
-			
+				uart.print_string("Motor_Left\r\n");	
+				mtr.T_left(mtr_v);
+				sprintf(buff,"%10s","Left");
+				lcd.I2C_LCD_write_string_XY(1,0,buff);
+				break;
+				
 			case T_right:
-			mtr.T_right(mtr_v);
-			uart.print_string("T R\r\n");
-			break;
-			
-			case Stop:
-			uart.print_string("Stop\r\n");
-			mtr.stop();
-			break;
-			
+				uart.print_string("Motor_right\r\n");
+				mtr.T_right(mtr_v);
+				sprintf(buff,"%10s","Right");
+				lcd.I2C_LCD_write_string_XY(1,0,buff);
+				break;
+					
 			case Back:
-			mtr.back(mtr_v);
-			break;
+				mtr.back(mtr_v);
+				uart.print_string("Motor_back\r\n");
+				sprintf(buff,"%10s","Back");
+				lcd.I2C_LCD_write_string_XY(1,0,buff);
+				break;
+				
+			case Stop:
+				mtr.stop();
+				sprintf(buff,"%10s","Stop");
+				lcd.I2C_LCD_write_string_XY(1,0,buff);
+				break;
 			
 			case Test:
-			//rx_tag = 1;
-			mtr.go(mtr_v);
-			break;
-			
+				uart.print_string("!Check the state number!\r\n");//UART tx
+				sprintf(buff,"%10s","Test mode");
+				lcd.I2C_LCD_write_string_XY(1,0,buff);
+				break;
+				
 			default:
 			break;
 		}
-			
 		rx_tag = uart.rx_check();
-		
-		if( rx_tag == 1 )
-		{
-			if_tag = true;
-		}
-		
-    }
-	#else
-		while(1)
-		{
-			if(rx_tag)//rx가 들어오면
-			{
-				//상태 설정 메세지 uart
-				uart.print_string("*********************************\r\n");
-				uart.print_string("***********Motor_State.**********\r\n");
-				uart.print_string("1. Go\r\n");
-				uart.print_string("2. Right\r\n");
-				uart.print_string("3. Left\r\n");
-				uart.print_string("4. Stop\r\n");
-				uart.print_string("Select Number>> \r\n");
-				rx_tag = 0;
-			}
-			
-			mtr_state = uart.mtr_chk();
-			sprintf(buff,"State: %d \r\n", mtr_state);
-			uart.print_string(buff);
-			if(mtr_state)
-			{
-				sprintf(prt_state,"%s\r\n", ( (mtr_state == 49) ? "-> 1.GO" : (mtr_state == 50 ? "-> 2.Left" : (mtr_state == 51 ? "-> 3.Right" : (mtr_state == 52 ? "-> 4.Stop" : (mtr_state == 53 ? "-> 5.Back" : "") ) ) ) ) );
-				//sprintf(buff,"State: %c \r\n", prt_state);
-				uart.print_string(prt_state);
-			}
-			switch(mtr_state)
-			{
-				case GO:
-				uart.print_string("Motor_GO\r\n");//UART tx
-				mtr.go(mtr_v);
-				break;
-				
-				case T_left:
-				uart.print_string("Motor_Left\r\n");//UART tx
-				mtr.T_left(mtr_v);
-				break;
-				
-				case T_right:
-				uart.print_string("Motor_right\r\n");//UART tx
-				mtr.T_right(mtr_v);
-				break;
-				
-				case Back:
-				mtr.back(mtr_v);
-				break;
-				
-				case Stop:
-				mtr.stop();
-				break;
-				
-				case Test:
-				break;
-				
-				default:
-				break;
-			}
-			rx_tag = uart.rx_check();
-		}
-	#endif
+	}
 	return 0;
 }
 

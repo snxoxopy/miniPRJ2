@@ -48,6 +48,9 @@ void motor::go(int v)
 {	
 	SpeedMotor_L(v);
 	SpeedMotor_R(v);
+	
+	SpeedMotor_LB(0);
+	SpeedMotor_RB(0);
 	PORTA = (1 << PORTA0);
 }
 
@@ -56,6 +59,9 @@ void motor::T_left(int v)
 	//int left = v + 200;
 	SpeedMotor_L(v);
 	SpeedMotor_R(1);
+	
+	SpeedMotor_LB(0);
+	SpeedMotor_RB(0);
 	PORTA = (1 << PORTA1);
 }
 
@@ -64,21 +70,28 @@ void motor::T_right(int v)
 	//int right = v + 200;
 	SpeedMotor_R(v);
 	SpeedMotor_L(1);
+	
+	SpeedMotor_LB(0);
+	SpeedMotor_RB(0);
 	PORTA = (1 << PORTA2);
 }
 
 void motor::back(int v)
 {	
+	PORTB = PORTE = 0x00;
 	SpeedMotor_L(0);
 	SpeedMotor_R(0);
 	SpeedMotor_LB(v);
 	SpeedMotor_RB(v);
+	
 	PORTA = (1 << PORTA3);
 }
 
 void motor::stop(void)
 {
 	//PORTB = PORTE = 0x00;
+	SpeedMotor_LB(0);
+	SpeedMotor_RB(0);
 	SpeedMotor_L(0);
 	SpeedMotor_R(0);
 	PORTA = 0x00;

@@ -21,7 +21,7 @@ UART1::~UART1(){};
 // 인터럽트 USART 초기화
 void UART1 :: USART1_init(unsigned int ubrr_baud)
 {
-	UCSR1B |= 1<<RXEN1 | 1<<TXEN1 | 1<<RXCIE1;
+	UCSR1B |= ( (1<<RXEN1) | (1<<TXEN1) | (1<<RXCIE1) );
 	//RXCIE0: 인터럽트 enable -> 입력값이 들어오면 링버퍼에 데이터를 쓰게함
 	UBRR1H = 0;
 	UBRR1L = ubrr_baud;
@@ -104,5 +104,3 @@ int UART1 :: rx_check(void)
 {
 	return (rx1_head != rx1_tail) ? 1 : 0;
 }
-
-
