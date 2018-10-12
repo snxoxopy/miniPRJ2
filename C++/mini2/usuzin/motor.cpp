@@ -25,14 +25,14 @@ motor::~motor()
 void motor::motor_init(void)
 {
 	//타이머
-	TCCR1B |= ( (1 << CS12) | (1 << CS10) );	//오른쪽 바퀴분주비 1024으로 설정
+	TCCR1B |= ( (1 << CS12) | (1 << CS10) );	//오른쪽 바퀴분주비 1024으로 설정?
 	TCCR1B |= (1 << WGM12);	//Fast PWM mode
 	TCCR1A |= ((1 << WGM11) | (1 << WGM10));	//Fast PWM mode
 	TCCR1A |= ((1 << COM1A1) | (1 << COM1B1) );
 
-	TCCR3B |= ( (1 << CS32) | (1 << CS30));	// 왼쪽바퀴 분주비 1024으로 설정
-	TCCR3B |= (1 << WGM32);	//Fast PWM mode
-	TCCR3A |= (1 << WGM31) | (1 << WGM30);	//Fast PWM mode
+	TCCR3B |= ( (1 << CS32) | (1 << CS30));		// 왼쪽바퀴 분주비 1024으로 설정
+	TCCR3B |= (1 << WGM32);						//Fast PWM mode
+	TCCR3A |= (1 << WGM31) | (1 << WGM30);		//Fast PWM mode
 	TCCR3A |= ((1 << COM3A1) | (1 << COM3B1) );
 	
 	LEFT_MOTOR_DDR	|=  ( (1 << LEFT_foward_PIN) | (1 << LEFT_back_PIN) );
